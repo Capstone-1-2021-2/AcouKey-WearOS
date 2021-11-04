@@ -3,6 +3,8 @@
     package="com.example.acoukey">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Requesting permission to record audio -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-feature android:name="android.hardware.type.watch" />
 
@@ -11,7 +13,10 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@style/Theme.AppCompat.NoActionBar">
+
+        <!-- android:theme="@android:style/Theme.DeviceDefault"> -->
+
         <uses-library
             android:name="com.google.android.wearable"
             android:required="true" />
