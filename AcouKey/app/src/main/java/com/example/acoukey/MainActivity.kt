@@ -25,11 +25,8 @@ class MainActivity : AppCompatActivity() {
 
     private var fileName: String = ""
 
-    private var recordButton: RecordButton? = null
     private var recorder: MediaRecorder? = null
-
-//    private var playButton: PlayButton? = null
-//    private var player: MediaPlayer? = null
+    private var player: MediaPlayer? = null
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted = false
@@ -80,64 +77,28 @@ class MainActivity : AppCompatActivity() {
         recorder = null
     }
 
-//    private fun onPlay(start: Boolean) = if (start) {
-//        startPlaying()
-//    } else {
-//        stopPlaying()
-//    }
-//
-//    private fun startPlaying() {
-//        player = MediaPlayer().apply {
-//            try {
-//                setDataSource(fileName)
-//                prepare()
-//                start()
-//            } catch (e: IOException) {
-//                Log.e(LOG_TAG, "prepare() failed")
-//            }
-//        }
-//    }
-//
-//    private fun stopPlaying() {
-//        player?.release()
-//        player = null
-//    }
+    private fun onPlay(start: Boolean) = if (start) {
+        startPlaying()
+    } else {
+        stopPlaying()
+    }
 
-    internal inner class RecordButton(ctx: Context) : androidx.appcompat.widget.AppCompatButton(ctx) {
-
-        var mStartRecording = true
-
-        var clicker: OnClickListener = OnClickListener {
-            onRecord(mStartRecording)
-            text = when (mStartRecording) {
-                true -> "Stop recording"
-                false -> "Start recording"
+    private fun startPlaying() {
+        player = MediaPlayer().apply {
+            try {
+                setDataSource(fileName)
+                prepare()
+                start()
+            } catch (e: IOException) {
+                Log.e(LOG_TAG, "prepare() failed")
             }
-            mStartRecording = !mStartRecording
-        }
-
-        init {
-            text = "Start recording"
-            setOnClickListener(clicker)
         }
     }
 
-//    internal inner class PlayButton(ctx: Context) : androidx.appcompat.widget.AppCompatButton(ctx) {
-//        var mStartPlaying = true
-//        var clicker: OnClickListener = OnClickListener {
-//            onPlay(mStartPlaying)
-//            text = when (mStartPlaying) {
-//                true -> "Stop playing"
-//                false -> "Start playing"
-//            }
-//            mStartPlaying = !mStartPlaying
-//        }
-//
-//        init {
-//            text = "Start playing"
-//            setOnClickListener(clicker)
-//        }
-//    }
+    private fun stopPlaying() {
+        player?.release()
+        player = null
+    }
 
     override fun onCreate(icicle: Bundle?) {
         super.onCreate(icicle)
@@ -147,31 +108,40 @@ class MainActivity : AppCompatActivity() {
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
 
-//        recordButton = RecordButton(this)
-//        playButton = PlayButton(this)
-//        val ll = LinearLayout(this).apply {
-//            addView(recordButton,
-//                LinearLayout.LayoutParams(
-//                    ViewGroup.LayoutParams.WRAP_CONTENT,
-//                    ViewGroup.LayoutParams.WRAP_CONTENT,
-//                    0f))
-//            addView(playButton,
-//                LinearLayout.LayoutParams(
-//                    ViewGroup.LayoutParams.WRAP_CONTENT,
-//                    ViewGroup.LayoutParams.WRAP_CONTENT,
-//                    0f))
-//        }
-//        setContentView(ll)
-
-//        var testButton: Button = findViewById(R.id.test_button)
         setContentView(R.layout.activity_main)
+
+        var mStartRecording = true
+
+        val recordButton: Button = findViewById(R.id.record_button)
+        recordButton.setOnClickListener {
+            onRecord(mStartRecording)
+            recordButton.text = when (mStartRecording) {
+                true -> "Stop"
+                false -> "Start"
+            }
+            mStartRecording = !mStartRecording
+//            Log.d(LOG_TAG, "mStartRecording=" + mStartRecording)
+        }
+
+        var mStartPlaying = true
+
+        val testButton: Button = findViewById(R.id.test_button)
+        testButton.setOnClickListener {
+            onPlay(mStartPlaying)
+            testButton.text = when (mStartPlaying) {
+                true -> "Stop"
+                false -> "Test"
+            }
+            mStartPlaying = !mStartPlaying
+//            Log.d(LOG_TAG, "mStartPlaying=" + mStartPlaying)
+        }
     }
 
     override fun onStop() {
         super.onStop()
         recorder?.release()
         recorder = null
-//        player?.release()
-//        player = null
+        player?.release()
+        player = null
     }
 }
