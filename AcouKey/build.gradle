@@ -3,6 +3,11 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        // For WaveBeans
+        maven {
+            name = "Bintray WaveBeans"
+            url = uri("https://dl.bintray.com/wavebeans/wavebeans")
+        }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:7.0.3"

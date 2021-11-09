@@ -6,6 +6,10 @@
     <!-- Requesting permission to record audio -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    // 외부 저장소 파일 액세스
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <uses-feature android:name="android.hardware.type.watch" />
 
     <application

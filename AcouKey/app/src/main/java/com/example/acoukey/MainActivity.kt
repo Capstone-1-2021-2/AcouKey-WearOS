@@ -6,16 +6,13 @@ import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
+import android.os.Environment
 // import android.support.v4.app.ActivityCompat
 import androidx.core.app.ActivityCompat
 // import android.support.v7.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import android.view.View.OnClickListener
-import android.view.ViewGroup
 import android.widget.Button
-import android.widget.LinearLayout
-import androidx.wear.widget.BoxInsetLayout
 import java.io.IOException
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -30,7 +27,10 @@ class MainActivity : AppCompatActivity() {
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted = false
-    private var permissions: Array<String> = arrayOf(Manifest.permission.RECORD_AUDIO)
+    private var permissions: Array<String> =
+        arrayOf(Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -55,9 +55,19 @@ class MainActivity : AppCompatActivity() {
     private fun startRecording() {
         recorder = MediaRecorder().apply {
             setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+
+            // 3GP
+//            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+//            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+            
+            // M4A
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC) // AAC?
+
+            // Sample rate: 44.1kHz
+            setAudioSamplingRate(44100)
+
             setOutputFile(fileName)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
 
             try {
                 prepare()
@@ -104,12 +114,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(icicle)
 
         // Record to the external cache directory for visibility
-        fileName = "${externalCacheDir?.absolutePath}/audiorecordtest.3gp"
+//        fileName = "${externalCacheDir?.absolutePath}/audiorecordtest.3gp"
+        // externalCacheDir를 사용하는 경우
+        // ls:/storage/emulated/0/Android/data/: Permission denied
+
+        fileName = "${this.externalMediaDirs.first()}/audiorecordtest.m4a"
+        // externalMediaDirs를 사용하는 경우
+        // /storage/emulated/0/Android/media/com.example.acoukey/audiorecordtest.3gp 로 접근하거나
+        // /storage/self/primary/Android/media/com.example.acoukey/audiorecordtest.3gp 로 접
+
+        // 접근하는 방법은 View -> Tool Windows -> Device File Explorer
+
+        // 아래 2가지 방법은 E/AudioRecordTest: prepare() failed 발생 -> java.lang.IllegalStateException
+//        fileName = "${Environment.getExternalStorageDirectory().absolutePath}/audiorecordtest.3gp"
+//        fileName = "/sdcard/audiorecordtest.3gp"
+
+        Log.d(LOG_TAG, "fileName=" + fileName)
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
 
         setContentView(R.layout.activity_main)
 
+        // UI
         var mStartRecording = true
 
         val recordButton: Button = findViewById(R.id.record_button)
