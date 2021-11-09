@@ -64,6 +64,10 @@ class MainActivity : AppCompatActivity() {
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC) // AAC?
 
+            setAudioEncodingBitRate(16*44100) // to overcome the poor audio quality
+            // https://stackoverflow.com/questions/36984853/mediarecorder-recording-audio-and-video-has-very-low-volume
+            // 나중에 최적화 필요
+            
             // Sample rate: 44.1kHz
             setAudioSamplingRate(44100)
 
