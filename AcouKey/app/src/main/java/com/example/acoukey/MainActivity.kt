@@ -3,6 +3,7 @@ package com.example.acoukey
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.AudioFormat
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
@@ -13,6 +14,8 @@ import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.widget.Button
+import com.github.squti.androidwaverecorder.WaveRecorder
+import io.wavebeans.lib.io.wave
 import java.io.IOException
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -24,6 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
+    private var waveRecorder: WaveRecorder? = null
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted = false
@@ -47,9 +51,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onRecord(start: Boolean) = if (start) {
-        startRecording()
+        waveRecorder?.startRecording()
+//        startRecording()
     } else {
-        stopRecording()
+        waveRecorder?.stopRecording()
+//        stopRecording()
     }
 
     private fun startRecording() {
@@ -121,7 +127,7 @@ class MainActivity : AppCompatActivity() {
         // externalCacheDir를 사용하는 경우
         // ls:/storage/emulated/0/Android/data/: Permission denied
 
-        fileName = "${this.externalMediaDirs.first()}/audiorecordtest.m4a"
+//        fileName = "${this.externalMediaDirs.first()}/audiorecordtest.m4a"
         // externalMediaDirs를 사용하는 경우
         // /storage/emulated/0/Android/media/com.example.acoukey/audiorecordtest.3gp 로 접근하거나
         // /storage/self/primary/Android/media/com.example.acoukey/audiorecordtest.3gp 로 접
@@ -131,6 +137,14 @@ class MainActivity : AppCompatActivity() {
         // 아래 2가지 방법은 E/AudioRecordTest: prepare() failed 발생 -> java.lang.IllegalStateException
 //        fileName = "${Environment.getExternalStorageDirectory().absolutePath}/audiorecordtest.3gp"
 //        fileName = "/sdcard/audiorecordtest.3gp"
+
+        // WAV
+        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
+        waveRecorder = WaveRecorder(fileName)
+        waveRecorder!!.noiseSuppressorActive = false
+        waveRecorder!!.waveConfig.sampleRate = 44100
+        waveRecorder!!.waveConfig.channels = AudioFormat.CHANNEL_IN_MONO
+        waveRecorder!!.waveConfig.audioEncoding = AudioFormat.ENCODING_PCM_16BIT
 
         Log.d(LOG_TAG, "fileName=" + fileName)
 

@@ -3,6 +3,7 @@
     package="com.example.acoukey">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <!-- Requesting permission to record audio -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
