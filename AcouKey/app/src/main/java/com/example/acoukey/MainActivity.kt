@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import com.github.squti.androidwaverecorder.WaveRecorder
 import io.wavebeans.lib.io.input
 import io.wavebeans.lib.io.wave
@@ -36,6 +37,10 @@ class MainActivity : AppCompatActivity() {
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
     private var waveRecorder: WaveRecorder? = null
+
+    // result TextView와 보여질 String
+    private var resultTextView: TextView? = null
+    private var resultString: String = ""
 
     // Requesting permission to RECORD_AUDIO
     private var permissionToRecordAccepted = false
@@ -61,9 +66,13 @@ class MainActivity : AppCompatActivity() {
     private fun onRecord(start: Boolean) = if (start) {
         waveRecorder?.startRecording()
 //        startRecording()
+
     } else {
+
         waveRecorder?.stopRecording()
         AudioProcessing(fileName)
+        RunModel()
+
 //        stopRecording()
     }
 
@@ -162,6 +171,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // UI
+        resultTextView = findViewById(R.id.result)
+
         var mStartRecording = true
 
         val recordButton: Button = findViewById(R.id.record_button)
@@ -298,7 +309,31 @@ class MainActivity : AppCompatActivity() {
             }
             returnResult.add(tempArray)
         }
-        println(returnResult.size)
-        println("done")
+        Log.d("Result", "returnResult.size=" + returnResult.size)
+        Log.d("Result", "done")
+//        println(returnResult.size)
+//        println("done")
+    }
+
+    private fun RunModel() {
+
+        // 아래 코드를 segmentation된 returnResult의 size만큼 반복
+
+        // input
+
+        // output
+        var output = Array(1) { FloatArray(26) }
+
+        // 어떤 알파벳으로 추정했는지
+        var max: Float = -1f
+        var idx: Int = 0
+        output[0].forEachIndexed { index, value ->
+            if (value > max) {
+                max = value
+                idx = index
+            }
+        }
+        resultString += (97+idx).toChar()
+        resultTextView?.text = resultString
     }
 }
