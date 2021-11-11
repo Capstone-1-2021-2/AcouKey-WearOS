@@ -268,31 +268,35 @@ class MainActivity : AppCompatActivity() {
         // Segmentation으로 잘린 오디오 조각들이 저장될 것임
         var SegResult = ArrayList<FiniteStream<Double>>()
 
-        // Segmentation
+        //Segmentation
         var cnt: Int = 0
-        var timecnt = 0 // 원본데이터에서의 Sampling index
+        var timecnt = 0 //원본데이터에서의 Sampling index
         for (i in totalMag) {
-            if (i <= 0.67*totalAverage && i>0.0) {  // peak 감지 -> 절댓값이 작을수록 peak임
-                var start = FFTList[cnt].time() // nano초 단위임
 
-                if ((start / 1000000000) < (timecnt / 44100)) {
-                    // 이미 처리한 시간대임
+            if (i <= 0.67 * totalAverage && i > 0.0) { //peak 감지 -> 절댓값이 작을수록 peak임
+
+                var start = FFTList[cnt].time() //nano초 단위임
+
+
+                if ((start / 1000000000.0) <= (timecnt / 44100.0)) {
+                    //이미 처리한 시간대임
                     cnt += 1
                     continue
                 }
 
-                if ((start / 1000000000) - 0.1 > 0) {   // 시작지점의 0.01초 앞에서 자르기
+                if ((start / 1000000000.0) - 0.1 > 0) {
                     start -= 10000000
-                }
+                }//시작지점의 0.01초 앞에서 자르기
 
-                // 시작시점을 기준으로 1.2초를 crop한 결과를 저장
-                timecnt = (((start + 10000000) / 1000000000) * 44100).toInt() + (44100 * 1.2).toInt()
 
-                if (timecnt < originalList.size){
-                    // println("[$cnt]$start:$i")
+                //시작시점을 기준으로 1.2초를 crop한 결과를 저장
+                timecnt = ((((start+10000000) / 1000000000.0) * 44100) + (44100 * 1.2) ).toInt()
+
+                if (timecnt < originalList.size) {
+                    //println("[$cnt]$start:$i")
                     SegResult.add(
                         originalList.subList(
-                            ((start / 1000000000) * 44100).toInt(),
+                            ((start / 1000000000.0) * 44100).toInt(),
                             timecnt
                         ).input()
                     )
