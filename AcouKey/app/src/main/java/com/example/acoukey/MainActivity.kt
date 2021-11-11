@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
     // Peak Detection & Segmentation
     // input: filePath (wav 파일이 위치한 경로)
     // output: returnResult (segmentation된 행렬 목록)
-    private fun AudioProcessing(filePath: String): ArrayList<Array<Array<Double>>> {
+    private fun AudioProcessing(filePath: String): ArrayList<Array<Array<Float>>> {
 
         // wavebeans로 input 데이터 생성
         val originalData = wave("file://${filePath}")
@@ -307,16 +307,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 행렬들이 담길 배열리스트 -> 나중에 return 값으로 쓰일 예정
-        var returnResult = ArrayList<Array<Array<Double>>>()
+        var returnResult = ArrayList<Array<Array<Float>>>()
 
         // 스펙트로그램이 반전된 모양의 행렬 -> 한 행이 (특정 시점의 주파수에 따른 magnitude 변화)
         for(i in SegResult){
 
             var tempFFT=i.window(256, 64).fft(256).asSequence(44100.0f).toList()
-            var tempArray= Array<Array<Double>>(tempFFT.size){ Array<Double>(tempFFT[0].frequency().toList().size) { 0.0 }}
+            var tempArray= Array<Array<Float>>(tempFFT.size){ Array<Float>(tempFFT[0].frequency().toList().size) { 0.0f }}
             var cnt=0
             for (j in tempFFT){
-                tempArray[cnt]=(j.magnitude().toList().toTypedArray())
+                tempArray[cnt]=(j.magnitude().map{it.toFloat()}.toList().toTypedArray())
                 cnt+=1
             }
             returnResult.add(tempArray)
