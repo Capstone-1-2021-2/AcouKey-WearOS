@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
     } else {
 
         waveRecorder?.stopRecording()
-        AudioProcessing(fileName)
-        RunModel()
+        val returnResult = AudioProcessing(fileName)
+        RunModel(returnResult)
 
 //        stopRecording()
     }
@@ -209,7 +209,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Peak Detection & Segmentation
-    private fun AudioProcessing(filePath: String) {
+    // input: filePath (wav 파일이 위치한 경로)
+    // output: returnResult (segmentation된 행렬 목록)
+    private fun AudioProcessing(filePath: String): ArrayList<Array<Array<Double>>> {
 
         // wavebeans로 input 데이터 생성
         val originalData = wave("file://${filePath}")
@@ -313,27 +315,34 @@ class MainActivity : AppCompatActivity() {
         Log.d("Result", "done")
 //        println(returnResult.size)
 //        println("done")
+
+        return returnResult
     }
 
-    private fun RunModel() {
+    private fun RunModel(returnResult: ArrayList<Array<Array<Double>>>) {
 
         // 아래 코드를 segmentation된 returnResult의 size만큼 반복
 
-        // input
+        for (input in returnResult) {
+            // input - Array<Array<Double>> 형의 행렬
+            // output - 각 알파벳(26개) 별로 추정치가 들어있는 행렬
+            var output = Array(1) { FloatArray(26) }
 
-        // output
-        var output = Array(1) { FloatArray(26) }
+            // tensorflow-lite 모델
 
-        // 어떤 알파벳으로 추정했는지
-        var max: Float = -1f
-        var idx: Int = 0
-        output[0].forEachIndexed { index, value ->
-            if (value > max) {
-                max = value
-                idx = index
+
+            
+            // 어떤 알파벳으로 추정했는지
+            var max: Float = -1f
+            var idx: Int = 0
+            output[0].forEachIndexed { index, value ->
+                if (value > max) {
+                    max = value
+                    idx = index
+                }
             }
+            resultString += (97+idx).toChar()
+            resultTextView?.text = resultString
         }
-        resultString += (97+idx).toChar()
-        resultTextView?.text = resultString
     }
 }
