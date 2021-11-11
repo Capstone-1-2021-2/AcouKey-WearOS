@@ -1,6 +1,7 @@
 package com.example.acoukey
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.AudioFormat
@@ -21,9 +22,14 @@ import io.wavebeans.lib.io.wave
 import io.wavebeans.lib.stream.FiniteStream
 import io.wavebeans.lib.stream.fft.fft
 import io.wavebeans.lib.stream.window.window
+import org.tensorflow.lite.Interpreter
 import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.lang.Exception
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 import java.util.ArrayList
 import kotlin.math.absoluteValue
 
@@ -321,17 +327,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun RunModel(returnResult: ArrayList<Array<Array<Double>>>) {
 
-        // 아래 코드를 segmentation된 returnResult의 size만큼 반복
+        resultString = ""   // 이전 결과 초기화
 
+        // segmentation된 returnResult의 size만큼 반복
         for (input in returnResult) {
-            // input - Array<Array<Double>> 형의 행렬
-            // output - 각 알파벳(26개) 별로 추정치가 들어있는 행렬
-            var output = Array(1) { FloatArray(26) }
 
             // tensorflow-lite 모델
 
+            //모델 준비
+            val tflite: Interpreter? = getTfliteInterpreter("mat2-lenet5.tflite")
 
-            
+            // [1][827][128][1] 사이즈로 모델에 입력
+            var inputFloat = Array(1) { Array(input.size) { Array(input[0].size) { FloatArray(1) } } }
+
+            // input: Array<Array<Double>>에서 inputFloat 으로 변환 - 모델이 Float형 데이터를 지원
+            for (i in input.indices) {
+                for (j in input[i].indices) {
+                    inputFloat[0][i][j][0] = input[i][j].toFloat()
+                }
+            }
+
+            // output - 각 알파벳(26개) 별로 추정치가 들어있는 행렬
+            var output = Array(1) { FloatArray(26) }
+
+            //모델 예측
+            if (tflite != null) {
+                tflite.run(inputFloat, output)
+            }
+
             // 어떤 알파벳으로 추정했는지
             var max: Float = -1f
             var idx: Int = 0
@@ -341,8 +364,33 @@ class MainActivity : AppCompatActivity() {
                     idx = index
                 }
             }
-            resultString += (97+idx).toChar()
+
+            val alphabet: Char = (97+idx).toChar()
+
+            Log.d("Result", "output[0]=" + output[0].contentToString())
+            Log.d("Result", "alphabet=" + alphabet)
+
+            resultString += alphabet
             resultTextView?.text = resultString
         }
+    }
+
+    private fun getTfliteInterpreter(modelPath: String): Interpreter? {
+        try {
+            return Interpreter(loadModelFile(this@MainActivity, modelPath)!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+    @Throws(IOException::class)
+    private fun loadModelFile(activity: Activity, modelPath: String): MappedByteBuffer? {
+        val fileDescriptor = activity.assets.openFd(modelPath)
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 }
