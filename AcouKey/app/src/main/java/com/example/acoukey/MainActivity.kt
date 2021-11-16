@@ -329,25 +329,25 @@ class MainActivity : AppCompatActivity() {
         return returnResult
     }
 
-    private fun RunModel(returnResult: ArrayList<Array<Array<Double>>>) {
+    private fun RunModel(returnResult: ArrayList<Array<Array<Float>>>) {
 
         resultString = ""   // 이전 결과 초기화
 
         // segmentation된 returnResult의 size만큼 반복
-        for (input in returnResult) {
+        for (item in returnResult) {
 
             // tensorflow-lite 모델
 
             //모델 준비
-            val tflite: Interpreter? = getTfliteInterpreter("mat2-lenet5.tflite")
+            val tflite: Interpreter? = getTfliteInterpreter("mat3-lenet5.tflite")
 
             // [1][827][128][1] 사이즈로 모델에 입력
-            var inputFloat = Array(1) { Array(input.size) { Array(input[0].size) { FloatArray(1) } } }
+            var input = Array(1) { Array(item.size) { Array(item[0].size) { FloatArray(1) } } }
 
-            // input: Array<Array<Double>>에서 inputFloat 으로 변환 - 모델이 Float형 데이터를 지원
-            for (i in input.indices) {
-                for (j in input[i].indices) {
-                    inputFloat[0][i][j][0] = input[i][j].toFloat()
+            // item: Array<Array<Double>>에서 모델의 입력 형식인 input으로 변환
+            for (i in item.indices) {
+                for (j in item[i].indices) {
+                    input[0][i][j][0] = item[i][j]
                 }
             }
 
@@ -356,7 +356,7 @@ class MainActivity : AppCompatActivity() {
 
             //모델 예측
             if (tflite != null) {
-                tflite.run(inputFloat, output)
+                tflite.run(input, output)
             }
 
             // 어떤 알파벳으로 추정했는지
