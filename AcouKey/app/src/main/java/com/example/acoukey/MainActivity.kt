@@ -43,6 +43,10 @@ class MainActivity : AppCompatActivity() {
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
     private var waveRecorder: WaveRecorder? = null
+    // 워치앱으로 학습 데이터 수집할 때
+//    private var count: Int = 0
+//    private var alphabet = arrayOf('a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm')
+//    private var index: Int = 0
 
     // result TextView와 보여질 String
     private var resultTextView: TextView? = null
@@ -70,14 +74,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onRecord(start: Boolean) = if (start) {
+        // WAV
+//        fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
+        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
+        waveRecorder = WaveRecorder(fileName)
+        waveRecorder!!.noiseSuppressorActive = false
+        waveRecorder!!.waveConfig.sampleRate = 44100
+        waveRecorder!!.waveConfig.channels = AudioFormat.CHANNEL_IN_MONO
+        waveRecorder!!.waveConfig.audioEncoding = AudioFormat.ENCODING_PCM_16BIT
+
+        Log.d(LOG_TAG, "fileName=" + fileName)
+
         waveRecorder?.startRecording()
 //        startRecording()
 
     } else {
 
         waveRecorder?.stopRecording()
-        val returnResult = AudioProcessing(fileName)
-        RunModel(returnResult)
+
+        // 워치앱으로 학습 데이터 수집할 때
+//        count++
+//
+//        if (count == 5) {
+//            count = 0
+//            index++
+//        } else {
+//            // empty
+//        }
+
+         val returnResult = AudioProcessing(fileName)
+         RunModel(returnResult)
 
 //        stopRecording()
     }
@@ -161,16 +187,6 @@ class MainActivity : AppCompatActivity() {
         // 아래 2가지 방법은 E/AudioRecordTest: prepare() failed 발생 -> java.lang.IllegalStateException
 //        fileName = "${Environment.getExternalStorageDirectory().absolutePath}/audiorecordtest.3gp"
 //        fileName = "/sdcard/audiorecordtest.3gp"
-
-        // WAV
-        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
-        waveRecorder = WaveRecorder(fileName)
-        waveRecorder!!.noiseSuppressorActive = false
-        waveRecorder!!.waveConfig.sampleRate = 44100
-        waveRecorder!!.waveConfig.channels = AudioFormat.CHANNEL_IN_MONO
-        waveRecorder!!.waveConfig.audioEncoding = AudioFormat.ENCODING_PCM_16BIT
-
-        Log.d(LOG_TAG, "fileName=" + fileName)
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
 
@@ -339,7 +355,7 @@ class MainActivity : AppCompatActivity() {
             // tensorflow-lite 모델
 
             //모델 준비
-            val tflite: Interpreter? = getTfliteInterpreter("mat3-lenet5.tflite")
+            val tflite: Interpreter? = getTfliteInterpreter("mat4-lenet5.tflite")
 
             // [1][827][128][1] 사이즈로 모델에 입력
             var input = Array(1) { Array(item.size) { Array(item[0].size) { FloatArray(1) } } }
