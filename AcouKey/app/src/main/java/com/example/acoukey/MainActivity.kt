@@ -44,9 +44,9 @@ class MainActivity : AppCompatActivity() {
     private var player: MediaPlayer? = null
     private var waveRecorder: WaveRecorder? = null
     // 워치앱으로 학습 데이터 수집할 때
-//    private var count: Int = 0
-//    private var alphabet = arrayOf('a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm')
-//    private var index: Int = 0
+    private var count: Int = 0
+    private var alphabet = arrayOf('a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' ,'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
+    private var index: Int = 0
 
     // result TextView와 보여질 String
     private var resultTextView: TextView? = null
@@ -75,8 +75,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun onRecord(start: Boolean) = if (start) {
         // WAV
-//        fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
-        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
+        fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
+//        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
         waveRecorder = WaveRecorder(fileName)
         waveRecorder!!.noiseSuppressorActive = false
         waveRecorder!!.waveConfig.sampleRate = 44100
@@ -93,17 +93,17 @@ class MainActivity : AppCompatActivity() {
         waveRecorder?.stopRecording()
 
         // 워치앱으로 학습 데이터 수집할 때
-//        count++
-//
-//        if (count == 5) {
-//            count = 0
-//            index++
-//        } else {
-//            // empty
-//        }
+        count++
 
-         val returnResult = AudioProcessing(fileName)
-         RunModel(returnResult)
+        if (count == 10) {
+            count = 0
+            index++
+        } else {
+            // empty
+        }
+
+//         val returnResult = AudioProcessing(fileName)
+//         RunModel(returnResult)
 
 //        stopRecording()
     }
@@ -355,7 +355,7 @@ class MainActivity : AppCompatActivity() {
             // tensorflow-lite 모델
 
             //모델 준비
-            val tflite: Interpreter? = getTfliteInterpreter("mat4-lenet5.tflite")
+            val tflite: Interpreter? = getTfliteInterpreter("mat6-lenet5.tflite")
 
             // [1][827][128][1] 사이즈로 모델에 입력
             var input = Array(1) { Array(item.size) { Array(item[0].size) { FloatArray(1) } } }
