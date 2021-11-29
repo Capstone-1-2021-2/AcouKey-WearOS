@@ -306,7 +306,7 @@ class MainActivity : AppCompatActivity() {
 
 
                 //시작시점을 기준으로 1.2초를 crop한 결과를 저장
-                timecnt = ((((start+10000000) / 1000000000.0) * 44100) + (44100 * 1.2) ).toInt()
+                timecnt = ((((start+10000000) / 1000000000.0) * 44100) + (44100 * 1.8) ).toInt()
 
                 if (timecnt < originalList.size) {
                     //println("[$cnt]$start:$i")
