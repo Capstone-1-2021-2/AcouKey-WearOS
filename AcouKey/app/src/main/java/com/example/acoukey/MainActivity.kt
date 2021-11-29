@@ -23,10 +23,7 @@ import io.wavebeans.lib.stream.FiniteStream
 import io.wavebeans.lib.stream.fft.fft
 import io.wavebeans.lib.stream.window.window
 import org.tensorflow.lite.Interpreter
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
 import java.lang.Exception
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
@@ -44,9 +41,9 @@ class MainActivity : AppCompatActivity() {
     private var player: MediaPlayer? = null
     private var waveRecorder: WaveRecorder? = null
     // 워치앱으로 학습 데이터 수집할 때
-    private var count: Int = 0
-    private var alphabet = arrayOf('a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' ,'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
-    private var index: Int = 0
+//    private var count: Int = 0
+//    private var alphabet = arrayOf('a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' ,'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
+//    private var index: Int = 0
 
     // result TextView와 보여질 String
     private var resultTextView: TextView? = null
@@ -75,7 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onRecord(start: Boolean) = if (start) {
         // WAV
-        fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
+//        fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
 //        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
         waveRecorder = WaveRecorder(fileName)
         waveRecorder!!.noiseSuppressorActive = false
@@ -93,14 +90,13 @@ class MainActivity : AppCompatActivity() {
         waveRecorder?.stopRecording()
 
         // 워치앱으로 학습 데이터 수집할 때
-        count++
-
-        if (count == 10) {
-            count = 0
-            index++
-        } else {
-            // empty
-        }
+//        count++
+//        if (count == 10) {
+//            count = 0
+//            index++
+//        } else {
+//            // empty
+//        }
 
 //         val returnResult = AudioProcessing(fileName)
 //         RunModel(returnResult)
@@ -220,6 +216,10 @@ class MainActivity : AppCompatActivity() {
             mStartPlaying = !mStartPlaying
 //            Log.d(LOG_TAG, "mStartPlaying=" + mStartPlaying)
         }
+
+        fileName = "${this.externalMediaDirs.first()}/audioFile_abc.wav"
+        val returnResult = AudioProcessing(fileName)
+        RunModel(returnResult)
     }
 
     override fun onStop() {
@@ -342,6 +342,34 @@ class MainActivity : AppCompatActivity() {
 //        println(returnResult.size)
 //        println("done")
 
+        //행렬 파일(.txt) 생성
+        var resultCnt=0
+        for (i in returnResult) {
+            var outPath="${this.externalMediaDirs.first()}/${resultCnt}.txt"
+            val outfile = File(outPath)
+            val printWriter = PrintWriter(outPath)
+
+            //println(i.size)
+
+            for (j in i.indices) {
+                //println("Array<Double> size:"+i[j].size.toString())
+                for (k in i[j].indices) {
+
+                    if(j==i.size-1 && k==i[j].size-1){
+                        printWriter.print(i[j][k].toString())
+                    }
+                    else{
+                        printWriter.print(i[j][k].toString()+",")
+                    }
+
+                }
+
+            }
+            printWriter.close()
+            resultCnt+=1
+
+        }
+
         return returnResult
     }
 
@@ -355,7 +383,7 @@ class MainActivity : AppCompatActivity() {
             // tensorflow-lite 모델
 
             //모델 준비
-            val tflite: Interpreter? = getTfliteInterpreter("mat6-lenet5.tflite")
+            val tflite: Interpreter? = getTfliteInterpreter("test.tflite")
 
             // [1][827][128][1] 사이즈로 모델에 입력
             var input = Array(1) { Array(item.size) { Array(item[0].size) { FloatArray(1) } } }
