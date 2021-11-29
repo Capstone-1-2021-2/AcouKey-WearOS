@@ -332,7 +332,7 @@ class MainActivity : AppCompatActivity() {
             var tempArray= Array<Array<Float>>(tempFFT.size){ Array<Float>(tempFFT[0].frequency().toList().size) { 0.0f }}
             var cnt=0
             for (j in tempFFT){
-                tempArray[cnt]=(j.magnitude().map{it.toFloat()}.toList().map{ if(!it.isFinite()) -100.0f else it}.toTypedArray())//tempArray[cnt]=(j.magnitude().map{it.toFloat()}.toList().toTypedArray())
+                tempArray[cnt]=(j.magnitude().map{it.toFloat()}.toList().map{ if(!it.isFinite()) -100.0f else it}.slice(47..70).toTypedArray())//tempArray[cnt]=(j.magnitude().map{it.toFloat()}.toList().toTypedArray())
                 cnt+=1
             }
             returnResult.add(tempArray)
