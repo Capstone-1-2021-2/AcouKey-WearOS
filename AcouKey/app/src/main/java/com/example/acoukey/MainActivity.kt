@@ -37,9 +37,11 @@ class MainActivity : AppCompatActivity() {
 
     private var fileName: String = ""
 
-    private var recorder: MediaRecorder? = null
-    private var player: MediaPlayer? = null
+//    private var recorder: MediaRecorder? = null
+//    private var player: MediaPlayer? = null
+
     private var waveRecorder: WaveRecorder? = null
+
     // 워치앱으로 학습 데이터 수집할 때
 //    private var count: Int = 0
 //    private var alphabet = arrayOf('a', 'b', 'c', 'd' ,'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' ,'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z')
@@ -71,9 +73,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onRecord(start: Boolean) = if (start) {
-        // WAV
-//        fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
-//        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
+        // WAV - 학습 데이터 수집
+//       fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
+        fileName = "${this.externalMediaDirs.first()}/audioFile.wav"
         waveRecorder = WaveRecorder(fileName)
         waveRecorder!!.noiseSuppressorActive = false
         waveRecorder!!.waveConfig.sampleRate = 44100
@@ -98,72 +100,72 @@ class MainActivity : AppCompatActivity() {
 //            // empty
 //        }
 
-//         val returnResult = AudioProcessing(fileName)
-//         RunModel(returnResult)
+         val returnResult = AudioProcessing(fileName)
+         RunModel(returnResult)
 
 //        stopRecording()
     }
 
-    private fun startRecording() {
-        recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-
-            // 3GP
-//            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-//            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-            
-            // M4A
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC) // HE_AAC? - 근데 Bit rate이 64.0 kbps 이상 안 나오는 듯
-
-            setAudioEncodingBitRate(128*1000) // Bit rate: 128 kbps - to overcome the poor audio quality
-            // https://stackoverflow.com/questions/36984853/mediarecorder-recording-audio-and-video-has-very-low-volume
-
-            // Sample rate: 44.1kHz
-            setAudioSamplingRate(44100)
-
-            setOutputFile(fileName)
-
-            try {
-                prepare()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
-            }
-
-            start()
-        }
-    }
-
-    private fun stopRecording() {
-        recorder?.apply {
-            stop()
-            release()
-        }
-        recorder = null
-    }
-
-    private fun onPlay(start: Boolean) = if (start) {
-        startPlaying()
-    } else {
-        stopPlaying()
-    }
-
-    private fun startPlaying() {
-        player = MediaPlayer().apply {
-            try {
-                setDataSource(fileName)
-                prepare()
-                start()
-            } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
-            }
-        }
-    }
-
-    private fun stopPlaying() {
-        player?.release()
-        player = null
-    }
+//    private fun startRecording() {
+//        recorder = MediaRecorder().apply {
+//            setAudioSource(MediaRecorder.AudioSource.MIC)
+//
+//            // 3GP
+////            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+////            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+//
+//            // M4A
+//            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+//            setAudioEncoder(MediaRecorder.AudioEncoder.AAC) // HE_AAC? - 근데 Bit rate이 64.0 kbps 이상 안 나오는 듯
+//
+//            setAudioEncodingBitRate(128*1000) // Bit rate: 128 kbps - to overcome the poor audio quality
+//            // https://stackoverflow.com/questions/36984853/mediarecorder-recording-audio-and-video-has-very-low-volume
+//
+//            // Sample rate: 44.1kHz
+//            setAudioSamplingRate(44100)
+//
+//            setOutputFile(fileName)
+//
+//            try {
+//                prepare()
+//            } catch (e: IOException) {
+//                Log.e(LOG_TAG, "prepare() failed")
+//            }
+//
+//            start()
+//        }
+//    }
+//
+//    private fun stopRecording() {
+//        recorder?.apply {
+//            stop()
+//            release()
+//        }
+//        recorder = null
+//    }
+//
+//    private fun onPlay(start: Boolean) = if (start) {
+//        startPlaying()
+//    } else {
+//        stopPlaying()
+//    }
+//
+//    private fun startPlaying() {
+//        player = MediaPlayer().apply {
+//            try {
+//                setDataSource(fileName)
+//                prepare()
+//                start()
+//            } catch (e: IOException) {
+//                Log.e(LOG_TAG, "prepare() failed")
+//            }
+//        }
+//    }
+//
+//    private fun stopPlaying() {
+//        player?.release()
+//        player = null
+//    }
 
     override fun onCreate(icicle: Bundle?) {
         super.onCreate(icicle)
@@ -191,6 +193,7 @@ class MainActivity : AppCompatActivity() {
         // UI
         resultTextView = findViewById(R.id.result)
 
+        // 녹음 버튼
         var mStartRecording = true
 
         val recordButton: Button = findViewById(R.id.record_button)
@@ -204,31 +207,33 @@ class MainActivity : AppCompatActivity() {
 //            Log.d(LOG_TAG, "mStartRecording=" + mStartRecording)
         }
 
-        var mStartPlaying = true
+        // 재생 버튼
+//        var mStartPlaying = true
+//
+//        val testButton: Button = findViewById(R.id.test_button)
+//        testButton.setOnClickListener {
+//            onPlay(mStartPlaying)
+//            testButton.text = when (mStartPlaying) {
+//                true -> "Stop"
+//                false -> "Test"
+//            }
+//            mStartPlaying = !mStartPlaying
+////            Log.d(LOG_TAG, "mStartPlaying=" + mStartPlaying)
+//        }
 
-        val testButton: Button = findViewById(R.id.test_button)
-        testButton.setOnClickListener {
-            onPlay(mStartPlaying)
-            testButton.text = when (mStartPlaying) {
-                true -> "Stop"
-                false -> "Test"
-            }
-            mStartPlaying = !mStartPlaying
-//            Log.d(LOG_TAG, "mStartPlaying=" + mStartPlaying)
-        }
-
-        fileName = "${this.externalMediaDirs.first()}/audioFile_abc.wav"
-        val returnResult = AudioProcessing(fileName)
-        RunModel(returnResult)
+        // audioFile_abc.wav 테스트
+//        fileName = "${this.externalMediaDirs.first()}/audioFile_abc.wav"
+//        val returnResult = AudioProcessing(fileName)
+//        RunModel(returnResult)
     }
 
-    override fun onStop() {
-        super.onStop()
-        recorder?.release()
-        recorder = null
-        player?.release()
-        player = null
-    }
+//    override fun onStop() {
+//        super.onStop()
+//        recorder?.release()
+//        recorder = null
+//        player?.release()
+//        player = null
+//    }
 
     // Peak Detection & Segmentation
     // input: filePath (wav 파일이 위치한 경로)
@@ -305,7 +310,7 @@ class MainActivity : AppCompatActivity() {
                 }//시작지점의 0.01초 앞에서 자르기
 
 
-                //시작시점을 기준으로 1.2초를 crop한 결과를 저장
+                //시작시점을 기준으로 1.8초를 crop한 결과를 저장
                 timecnt = ((((start+10000000) / 1000000000.0) * 44100) + (44100 * 1.8) ).toInt()
 
                 if (timecnt < originalList.size) {
@@ -383,7 +388,7 @@ class MainActivity : AppCompatActivity() {
             // tensorflow-lite 모델
 
             //모델 준비
-            val tflite: Interpreter? = getTfliteInterpreter("test.tflite")
+            val tflite: Interpreter? = getTfliteInterpreter("cs-m4a-wav.tflite")
 
             // [1][827][128][1] 사이즈로 모델에 입력
             var input = Array(1) { Array(item.size) { Array(item[0].size) { FloatArray(1) } } }
