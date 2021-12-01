@@ -192,18 +192,18 @@ class MainActivity : AppCompatActivity() {
 //            Log.d(LOG_TAG, "mStartRecording=" + mStartRecording)
         }
 
-        var mStartPlaying = true
-
-        val testButton: Button = findViewById(R.id.test_button)
-        testButton.setOnClickListener {
-            onPlay(mStartPlaying)
-            testButton.text = when (mStartPlaying) {
-                true -> "Stop"
-                false -> "Test"
-            }
-            mStartPlaying = !mStartPlaying
-//            Log.d(LOG_TAG, "mStartPlaying=" + mStartPlaying)
-        }
+//        var mStartPlaying = true
+//
+//        val testButton: Button = findViewById(R.id.test_button)
+//        testButton.setOnClickListener {
+//            onPlay(mStartPlaying)
+//            testButton.text = when (mStartPlaying) {
+//                true -> "Stop"
+//                false -> "Test"
+//            }
+//            mStartPlaying = !mStartPlaying
+////            Log.d(LOG_TAG, "mStartPlaying=" + mStartPlaying)
+//        }
     }
 
     override fun onStop() {
