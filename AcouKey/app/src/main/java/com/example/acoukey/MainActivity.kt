@@ -446,4 +446,88 @@ class MainActivity : AppCompatActivity() {
         val declaredLength = fileDescriptor.declaredLength
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
+
+
+
+    fun loadCentroid():ArrayList<Array<Array<Float>>> {
+
+        val path2 = "C:/Users/gosan/centroid/" //centroid text파일 폴더 경로
+        var result = ArrayList<Array<Array<Float>>>()
+        for (alphabet in 'a'..'z') {
+            val filename: String = path2 + "$alphabet.txt"
+            val file2 = File(filename)
+
+            //text파일에서 centroid 배열 가져오기
+            val ls: InputStream = file2.inputStream()
+            val lsReader = ls.reader()
+            val testStr: List<String> = lsReader.readLines()
+            //println(testStr[0].length)
+            lsReader.close()
+            ls.close()
+
+            var token = testStr[0].split(',');
+            //println(token.size)
+
+
+            val tempArray = token.map { it.toFloat() }.toTypedArray()
+
+            var input = Array<Array<Float>>(1248) { Array<Float>(24) { 0.0f } }
+
+            // item: Array<Array<Double>>에서 모델의 입력 형식인 input으로 변환
+            for (i in input.indices) {
+                for (j in input[i].indices) {
+                    //println(i * 24 + j)
+                    input[i][j] = tempArray[i * 24 + j]
+                }
+            }
+
+
+            result.add(input)
+
+        }
+
+        return result
+    }
+
+
+    fun run_kNN(returnResult: ArrayList<Array<Array<Float>>>){
+
+
+
+        var centroid=loadCentroid()
+
+        for (item in returnResult) { //for문 한 번에 한글자씩 예측
+
+            var minDist=0.0f
+            var minIdx = 0
+            for (j in centroid.indices){
+                //for문 한 번에 centroid 하나와의 거리 계산
+                var distList= mutableListOf<Float>(0.0f)
+                for(row in centroid[j].indices){
+                    for(col in centroid[j][row].indices){
+                        distList.add(abs(centroid[j][row][col]-item[row][col]))
+                    }
+                }
+                val dist=distList.sum()
+                if(j==0){
+                    minDist=dist
+                    minIdx=j
+                }
+                else{
+                    if(minDist>dist){
+                        minDist=dist
+                        minIdx=j
+                    }
+                }
+            }
+
+            val pred=(97+minIdx).toChar() //minIdx에 예측된 알파벳 인덱스가 저장됨
+
+            //println(pred)
+            //Log.d("Predict","$pred")
+
+        }
+    }
+
+
 }
