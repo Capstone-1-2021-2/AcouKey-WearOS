@@ -30,6 +30,9 @@ import java.nio.channels.FileChannel
 import java.util.ArrayList
 import kotlin.math.abs
 import kotlin.math.absoluteValue
+import kotlin.math.pow
+import kotlin.system.measureTimeMillis
+import kotlin.time.*
 
 private const val LOG_TAG = "AudioRecordTest"
 private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
@@ -73,6 +76,7 @@ class MainActivity : AppCompatActivity() {
         if (!permissionToRecordAccepted) finish()
     }
 
+    @ExperimentalTime
     private fun onRecord(start: Boolean) = if (start) {
         // WAV - 학습 데이터 수집
 //       fileName = "${this.externalMediaDirs.first()}/${alphabet[index]}${count}.wav"
@@ -101,9 +105,19 @@ class MainActivity : AppCompatActivity() {
 //            // empty
 //        }
 
-        val returnResult = AudioProcessing(fileName)
+        val timedValue: TimedValue<ArrayList<Array<Array<Float>>>> = measureTimedValue {
+            AudioProcessing(fileName)
+        }
+        var duration: Duration = timedValue.duration
+        val returnResult = timedValue.value
+        Log.d("Speed", "speed_AudioProcessing=" + duration.inSeconds)
+
 //        RunModel(returnResult)
-        run_kNN(returnResult)
+
+        duration = measureTime {
+            run_kNN(returnResult)
+        }
+        Log.d("Speed", "speed_run_kNN=" + duration.inSeconds)
 
 //        stopRecording()
     }
@@ -169,6 +183,7 @@ class MainActivity : AppCompatActivity() {
 //        player = null
 //    }
 
+    @ExperimentalTime
     override fun onCreate(icicle: Bundle?) {
         super.onCreate(icicle)
 
@@ -489,12 +504,15 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
-
+    @ExperimentalTime
     fun run_kNN(returnResult: ArrayList<Array<Array<Float>>>){
 
         var centroid=loadCentroid()
 
         resultString = ""   // 이전 결과 초기화
+
+        // word_correction을 위한 후보 알파벳 모음
+        var candidatesAll = ArrayList<CharArray>()
 
         for (item in returnResult) { //for문 한 번에 한글자씩 예측
 
@@ -532,11 +550,90 @@ class MainActivity : AppCompatActivity() {
             distAll = distAll.toList().sortedBy { it.second }.toMap().toMutableMap()
             Log.d("Result", "distAll=" + distAll)
 
+            var depth = 3   // 3순위까지 본다
+            var candidates = CharArray(depth)
+            distAll.onEachIndexed loop@ { index, entry ->
+                if (index >= depth) return@loop
+                candidates[index] = entry.key
+            }
+
+            candidatesAll.add(candidates)
+
             val alphabet: Char = (97+minIdx).toChar() //minIdx에 예측된 알파벳 인덱스가 저장됨
             Log.d("Result", "alphabet=" + alphabet)
 
+            // word_correction 없이 바로 화면에 출력할 때
             resultString += alphabet
-            resultTextView?.text = resultString
         }
+
+        // word_correction
+        if (returnResult.size >= 3) {
+            // 시간 측정
+            val timedValue: TimedValue<String> = measureTimedValue {
+                word_correction(candidates = candidatesAll, num = returnResult.size)
+            }
+            val duration: Duration = timedValue.duration
+            resultString = timedValue.value
+
+            Log.d("Speed", "speed_word_correction=" + duration.inSeconds)
+        }
+
+        resultTextView?.text = resultString
+
+        // 나중에 resultString을 반환하는 함수로 만드는 것이 더 좋겠음
+        // 최종적으로 resultTextView에 반영하는 것은 onRecord에서..?
+    }
+
+    fun word_correction(candidates: ArrayList<CharArray>, num: Int): String {
+
+        val word_path = "${this.externalMediaDirs.first()}/word${num}.txt" // * letter words dictionary 파일 경로
+
+        val file = File(word_path)
+
+        val ls: InputStream = file.inputStream()
+        val lsReader = ls.reader()
+        val wordDictionary: List<String> = lsReader.readLines() // List는 검색에 느리다?
+        lsReader.close()
+        ls.close()
+
+        // words
+        var words = Array<String>((3f).pow(num).toInt(), {_->""})
+
+        // 최적화 필요.. cartesian product
+        var idx = 0
+        candidates[0].forEach { w ->
+            candidates[1].forEach { x ->
+                candidates[2].forEach { y ->
+                    if (num >= 4) {
+                        candidates[3].forEach { z ->
+                            words[idx] = "$w$x$y$z"
+                            idx++
+                        }
+                    } else {
+                        words[idx] = "$w$x$y"
+                        idx++
+                    }
+                }
+            }
+        }
+
+        var result: String = "" // 반환할 결과 문자열
+
+        var flag = false
+        words.forEach { word ->
+            if (wordDictionary.contains(word)) {
+                result = word // 만약 correction 될 수 있는 단어가 2개 이상이면?
+                flag = true
+            }
+        }
+
+        if (!flag) {
+            // 만약 사전에 없다면 가장 높게 추정한 알파벳의 조합으로..
+            candidates.forEach { candidate ->
+                result += candidate[0]
+            }
+        }
+
+        return result
     }
 }
