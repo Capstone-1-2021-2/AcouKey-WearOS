@@ -28,6 +28,7 @@ import java.lang.Exception
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.util.ArrayList
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -100,8 +101,9 @@ class MainActivity : AppCompatActivity() {
 //            // empty
 //        }
 
-         val returnResult = AudioProcessing(fileName)
-         RunModel(returnResult)
+        val returnResult = AudioProcessing(fileName)
+//        RunModel(returnResult)
+        run_kNN(returnResult)
 
 //        stopRecording()
     }
@@ -348,32 +350,32 @@ class MainActivity : AppCompatActivity() {
 //        println("done")
 
         //행렬 파일(.txt) 생성
-        var resultCnt=0
-        for (i in returnResult) {
-            var outPath="${this.externalMediaDirs.first()}/${resultCnt}.txt"
-            val outfile = File(outPath)
-            val printWriter = PrintWriter(outPath)
-
-            //println(i.size)
-
-            for (j in i.indices) {
-                //println("Array<Double> size:"+i[j].size.toString())
-                for (k in i[j].indices) {
-
-                    if(j==i.size-1 && k==i[j].size-1){
-                        printWriter.print(i[j][k].toString())
-                    }
-                    else{
-                        printWriter.print(i[j][k].toString()+",")
-                    }
-
-                }
-
-            }
-            printWriter.close()
-            resultCnt+=1
-
-        }
+//        var resultCnt=0
+//        for (i in returnResult) {
+//            var outPath="${this.externalMediaDirs.first()}/${resultCnt}.txt"
+//            val outfile = File(outPath)
+//            val printWriter = PrintWriter(outPath)
+//
+//            //println(i.size)
+//
+//            for (j in i.indices) {
+//                //println("Array<Double> size:"+i[j].size.toString())
+//                for (k in i[j].indices) {
+//
+//                    if(j==i.size-1 && k==i[j].size-1){
+//                        printWriter.print(i[j][k].toString())
+//                    }
+//                    else{
+//                        printWriter.print(i[j][k].toString()+",")
+//                    }
+//
+//                }
+//
+//            }
+//            printWriter.close()
+//            resultCnt+=1
+//
+//        }
 
         return returnResult
     }
@@ -447,11 +449,9 @@ class MainActivity : AppCompatActivity() {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-
-
     fun loadCentroid():ArrayList<Array<Array<Float>>> {
 
-        val path2 = "C:/Users/gosan/centroid/" //centroid text파일 폴더 경로
+        val path2 = "${this.externalMediaDirs.first()}/centroid/" //centroid text파일 폴더 경로
         var result = ArrayList<Array<Array<Float>>>()
         for (alphabet in 'a'..'z') {
             val filename: String = path2 + "$alphabet.txt"
@@ -492,11 +492,13 @@ class MainActivity : AppCompatActivity() {
 
     fun run_kNN(returnResult: ArrayList<Array<Array<Float>>>){
 
-
-
         var centroid=loadCentroid()
 
+        resultString = ""   // 이전 결과 초기화
+
         for (item in returnResult) { //for문 한 번에 한글자씩 예측
+
+            var distAll: MutableMap<Char, Float> = mutableMapOf('a' to 0f)
 
             var minDist=0.0f
             var minIdx = 0
@@ -509,6 +511,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 val dist=distList.sum()
+
+                // 각 centroid와의 거리값을 보관
+                val chr = (97+j).toChar()
+                distAll.put(chr, dist)
+
                 if(j==0){
                     minDist=dist
                     minIdx=j
@@ -521,13 +528,15 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            val pred=(97+minIdx).toChar() //minIdx에 예측된 알파벳 인덱스가 저장됨
+            // 알파벳 별로 예측치를 뽑기
+            distAll = distAll.toList().sortedBy { it.second }.toMap().toMutableMap()
+            Log.d("Result", "distAll=" + distAll)
 
-            //println(pred)
-            //Log.d("Predict","$pred")
+            val alphabet: Char = (97+minIdx).toChar() //minIdx에 예측된 알파벳 인덱스가 저장됨
+            Log.d("Result", "alphabet=" + alphabet)
 
+            resultString += alphabet
+            resultTextView?.text = resultString
         }
     }
-
-
 }
